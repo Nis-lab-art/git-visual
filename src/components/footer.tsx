@@ -45,7 +45,7 @@ export default function Footer() {
           rel="noopener noreferrer"
           className="text-blue-500 hover:underline"
         >
-          React Flip Toolkit
+          react-flip-toolkit
         </a>{" "}
         and more!
       </p>

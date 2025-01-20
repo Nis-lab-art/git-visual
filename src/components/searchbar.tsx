@@ -4,7 +4,12 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Loader2, Search } from "lucide-react";
-import { getUserDetails, getRepoDetails, getLanguageStats } from "@/api/api";
+import {
+  getUserDetails,
+  getRepoDetails,
+  getLanguageStats,
+  getRateLimit,
+} from "@/api/api";
 import type { GithubUser } from "../types/github";
 import { UserCard } from "./usercard";
 import { LanguageChart } from "./langchart";
@@ -15,6 +20,7 @@ import { RepositoryGridSkeleton } from "./skeleton/repogrid-skeleton";
 import { EmptyState } from "./emptystate";
 import Footer from "./footer";
 import { ModeToggle } from "./mode-toggle";
+import { RateLimitState } from "./ratelimitstate";
 
 export default function SearchBar() {
   const [username, setUsername] = React.useState("");
@@ -22,6 +28,7 @@ export default function SearchBar() {
   const [userData, setUserData] = React.useState<GithubUser | null>(null);
   const [repoData, setRepoData] = React.useState<any | null>(null);
   const [lanData, setLanData] = React.useState<any | null>(null);
+  const [isRateLimited, setIsRateLimited] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,8 +42,11 @@ export default function SearchBar() {
       setRepoData(repos);
       setLanData(languages);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      console.error(error);
+      if (err instanceof Error && err.message === "Forbidden") {
+        setIsRateLimited(true);
+      } else {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -48,6 +58,7 @@ export default function SearchBar() {
     setRepoData(null);
     setLanData(null);
     setError(null);
+    setIsRateLimited(false);
   };
 
   return (
@@ -107,6 +118,8 @@ export default function SearchBar() {
             </div>
             <RepositoryGridSkeleton />
           </div>
+        ) : isRateLimited ? (
+          <RateLimitState />
         ) : userData ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,26 +1,30 @@
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function LanguageChartSkeleton() {
   return (
-    <div className="h-full">
-      <Card className="h-full">
-        <CardContent className="p-6">
-          <div className="h-[300px] w-full flex gap-8">
-            <div className="w-2/3 relative">
-              <Skeleton className="absolute inset-0 rounded-full" />
-            </div>
-            <div className="w-1/3 space-y-2">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-5" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="flex flex-col h-full">
+      <CardHeader className="items-center pb-0">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-32 mt-1.5" />
+      </CardHeader>
+      <CardContent className="flex-1 pb-0">
+        <div className="mx-auto aspect-square max-h-[250px] relative">
+          <Skeleton className="absolute inset-0 rounded-full" />{" "}
+          {/* Pie Chart */}
+        </div>
+      </CardContent>
+      <CardFooter className="flex-col gap-2">
+        <Skeleton className="h-5 w-56" />
+        <Skeleton className="h-4 w-48" />
+      </CardFooter>
+    </Card>
   );
 }
