@@ -36,7 +36,6 @@ export default function SearchBar() {
       setUserData(user);
       setRepoData(repos);
       setLanData(languages);
-      console.log(languages);
     } catch (err) {
       if (err instanceof Error && err.message === "Forbidden") {
         setIsRateLimited(true);

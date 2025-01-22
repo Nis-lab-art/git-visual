@@ -56,7 +56,6 @@ export function LanguageChart({ data }: LanguageChartProps) {
     return { label: highest.label, percentage: `${percentage}%` };
   }
   const highestPercentage = findHighestPercentage(data);
-  console.log(highestPercentage);
 
   return (
     <Card className="flex flex-col h-full">
