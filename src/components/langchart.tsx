@@ -44,11 +44,19 @@ export function LanguageChart({ data }: LanguageChartProps) {
     return acc;
   }, {} as Record<string, { label: string; color: string }>) satisfies ChartConfig;
 
-  // Calculate total percentage for the footer
-  const topLanguages = data
-    .slice(0, 3)
-    .reduce((total, item) => total + item.value, 0)
-    .toFixed(1);
+  function findHighestPercentage(data: LanguageData[]) {
+    const total = data.reduce((acc, item) => acc + item.value, 0);
+
+    if (total === 0) return "No data to calculate percentages";
+
+    const highest = data.reduce((prev, current) =>
+      prev.value > current.value ? prev : current
+    );
+    const percentage = ((highest.value / total) * 100).toFixed(2);
+    return { label: highest.label, percentage: `${percentage}%` };
+  }
+  const highestPercentage = findHighestPercentage(data);
+  console.log(highestPercentage);
 
   return (
     <Card className="flex flex-col h-full">
@@ -79,7 +87,9 @@ export function LanguageChart({ data }: LanguageChartProps) {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
-          Top 3 languages make up {topLanguages}%{" "}
+          {typeof highestPercentage === "string"
+            ? highestPercentage
+            : `${highestPercentage.label} makes up ${highestPercentage.percentage}`}
           <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">

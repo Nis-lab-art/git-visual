@@ -4,12 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Loader2, Search } from "lucide-react";
-import {
-  getUserDetails,
-  getRepoDetails,
-  getLanguageStats,
-  getRateLimit,
-} from "@/api/api";
+import { getUserDetails, getRepoDetails, getLanguageStats } from "@/api/api";
 import type { GithubUser } from "../types/github";
 import { UserCard } from "./usercard";
 import { LanguageChart } from "./langchart";
@@ -41,6 +36,7 @@ export default function SearchBar() {
       setUserData(user);
       setRepoData(repos);
       setLanData(languages);
+      console.log(languages);
     } catch (err) {
       if (err instanceof Error && err.message === "Forbidden") {
         setIsRateLimited(true);
