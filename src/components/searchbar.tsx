@@ -4,8 +4,13 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Loader2, Search } from "lucide-react";
-import { getUserDetails, getRepoDetails, getLanguageStats } from "@/api/api";
-import type { GithubUser } from "../types/github";
+import {
+  getUserDetails,
+  getRepoDetails,
+  getLanguageStats,
+  getRateLimit,
+} from "@/api/api";
+import type { GithubUser, ApiError } from "../types/github";
 import { UserCard } from "./usercard";
 import { LanguageChart } from "./langchart";
 import { RepositoryGrid } from "./repogrid";
@@ -15,7 +20,7 @@ import { RepositoryGridSkeleton } from "./skeleton/repogrid-skeleton";
 import { EmptyState } from "./emptystate";
 import Footer from "./footer";
 import { ModeToggle } from "./mode-toggle";
-import { RateLimitState } from "./ratelimitstate";
+import { ErrorState } from "./errorstate";
 
 export default function SearchBar() {
   const [username, setUsername] = React.useState("");
@@ -23,24 +28,39 @@ export default function SearchBar() {
   const [userData, setUserData] = React.useState<GithubUser | null>(null);
   const [repoData, setRepoData] = React.useState<any | null>(null);
   const [lanData, setLanData] = React.useState<any | null>(null);
-  const [isRateLimited, setIsRateLimited] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    resetSearch();
     setIsLoading(true);
     try {
+      const limit = await getRateLimit();
       const user = await getUserDetails(username);
       const repos = await getRepoDetails(username);
       const languages = await getLanguageStats(username);
       setUserData(user);
       setRepoData(repos);
       setLanData(languages);
-    } catch (err) {
-      if (err instanceof Error && err.message === "Forbidden") {
-        setIsRateLimited(true);
+    } catch (err: any) {
+      const error = err as ApiError;
+      if (typeof err.statusCode === "number") {
+        switch (err.statusCode) {
+          case 403:
+            setErrorMessage("Access denied: Rate limit exceeded.");
+            break;
+          case 404:
+            setErrorMessage("User not found in Github.");
+            break;
+          case 500:
+            setErrorMessage("Server error. Please try again later.");
+            break;
+          default:
+            setErrorMessage(err.message || "An unexpected error occurred.");
+            break;
+        }
       } else {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        setErrorMessage("An unexpected error occurred.");
       }
     } finally {
       setIsLoading(false);
@@ -52,8 +72,7 @@ export default function SearchBar() {
     setUserData(null);
     setRepoData(null);
     setLanData(null);
-    setError(null);
-    setIsRateLimited(false);
+    setErrorMessage(null);
   };
 
   return (
@@ -103,8 +122,6 @@ export default function SearchBar() {
       </header>
 
       <main className="flex-1 container py-6 justify-center items-center">
-        {error && <div className="text-center text-red-500 mb-6">{error}</div>}
-
         {isLoading ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -113,8 +130,8 @@ export default function SearchBar() {
             </div>
             <RepositoryGridSkeleton />
           </div>
-        ) : isRateLimited ? (
-          <RateLimitState />
+        ) : errorMessage ? (
+          <ErrorState message={errorMessage} />
         ) : userData ? (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -128,7 +145,7 @@ export default function SearchBar() {
             <RepositoryGrid repositories={repoData} />
           </div>
         ) : (
-          !error && <EmptyState />
+          !errorMessage && <EmptyState />
         )}
       </main>
       <Footer />
